@@ -1,11 +1,13 @@
 document.addEventListener("DOMContentLoaded", function() { 
-   
+    chrome.tabs.executeScript(null,{code:"document.getElementById('txtTotalMilesKM').value='Test';"});
     var __PDF_DOC,
         __CURRENT_PAGE,
         __TOTAL_PAGES,
         __PAGE_RENDERING_IN_PROGRESS = 0,
         __CANVAS = $('#pdf-canvas').get(0),
-        __CANVAS_CTX = __CANVAS.getContext('2d');
+        __CANVAS_CTX = __CANVAS.getContext('2d'),
+        selectingGridCorner=4,
+        gridCoordinates=[[0,0],[0,0],[0,0],[0,0]];;
     function changeSize(){
         var canvas=$('#pdf-canvas');
         var pct = .5;
@@ -84,13 +86,19 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         });
     }
-
+    function getMousePos(canvas, evt) {
+        var rect = canvas.getBoundingClientRect();
+        return {
+          x: evt.clientX - rect.left,
+          y: evt.clientY - rect.top
+        };
+    }   
     // Upon click this should should trigger click on the #file-to-upload file input element
     // This is better than showing the not-good-looking file input element
     $("#upload-button").on('click', function() {
         $("#file-to-upload").trigger('click');
     });
-
+    
     // When user chooses a PDF file
     $("#file-to-upload").on('change', function() {
         // Validate whether PDF
@@ -113,7 +121,48 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Next page of the PDF
     $("#pdf-next").on('click', function() {
-        if(__CURRENT_PAGE != __TOTAL_PAGES)
-            showPage(++__CURRENT_PAGE);
+        //if(__CURRENT_PAGE != __TOTAL_PAGES)
+            //showPage(++__CURRENT_PAGE);
+        __CANVAS_CTX.translate(__CANVAS.width/2,__CANVAS.height/2);
+        rotateAmt=rotateAmt+.1;
+        __CANVAS_CTX.rotate(.1);
+        __CANVAS_CTX.fillRect(0,0, 100, 100);
+    });
+    var rotateAmt=0;
+    $("#pdf-grid").on('click', function() {
+        __CANVAS_CTX.translate(__CANVAS.width/2,__CANVAS.height/2);
+        rotateAmt=rotateAmt+.1;
+        __CANVAS_CTX.rotate(.1);
+        __CANVAS_CTX.fillRect(gridCoordinates[0][0],gridCoordinates[0][1], 100, 100);
+        if(selectingGridCorner>=3){
+            selectingGridCorner=0;
+            gridCoordinates=[[0,0],[0,0],[0,0],[0,0]];
+            $("#pdf-grid").text('Cancel');
+        }else{
+            selectingGridCorner=4;
+            $("#pdf-grid").text("Select Grid");
+        }
+    });
+     $("#pdf-canvas").on('click', function(evt) {
+         var pos = getMousePos(document.getElementById('pdf-canvas'), evt);
+   
+        if(selectingGridCorner==3){
+            
+        }else{
+            gridCoordinates[selectingGridCorner][0]=pos.x;
+            gridCoordinates[selectingGridCorner][1]=pos.y;
+            $("#pdf-grid").text(gridCoordinates[selectingGridCorner][0] +" " +gridCoordinates[selectingGridCorner][1]+" "+selectingGridCorner);
+            selectingGridCorner++;
+            if(selectingGridCorner==3){
+                $("#pdf-grid").text("Boom");
+                //__CANVAS_CTX.fillRect(gridCoordinates[0][0],gridCoordinates[0][1], 100, 100);
+                var slope =0;
+                var length=Math.hypot(gridCoordinates[1][0]-gridCoordinates[0][0], gridCoordinates[1][1]-gridCoordinates[0][1]);
+                var width=Math.hypot(gridCoordinates[2][0]-gridCoordinates[1][0], gridCoordinates[2][1]-gridCoordinates[1][1]);
+                //ctx.translate(0,0);
+                //ctx.rotate(Math.atan(slope));
+                __CANVAS_CTX.fillRect(gridCoordinates[0][0], gridCoordinates[0][1], length, width);
+            }
+        }
     });
 });
