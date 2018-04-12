@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<style>
+
+#mydivheader {
+    position: absolute;
+    padding: 0px;
+    cursor: move;
+    z-index: 101;
+    background-color: #2196F3;
+    color: #fff;
+    height: 100%;
+    top:0;
+}
+    #logPanel {
+    height: 100%;
+    width: 100;
+    position: fixed;
+    z-index: 101;
+    top: 0;
+    left: 0;
+    background-color: #111;
+    overflow-x: hidden;
+   
+    padding-top: 60px;
+   
+</style>
+<body>
+<div id="logPanel">
+<h1 id="test">Draggable DIV Element</h1>
+
+<p>Click and hold the mouse button down while moving the DIV element</p>
+    </div>
+
+<div id="mydivheader"  style="width: 8px;"></div>
+<script>
+//Make the DIV element draggagle:
+dragElement(document.getElementById(("mydivheader")));
+
+function dragElement(elmnt) {
+  var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  if (document.getElementById("mydivheader")) {
+    /* if present, the header is where you move the DIV from:*/
+    document.getElementById("mydivheader").onmousedown = dragMouseDown;
+  } else {
+    /* otherwise, move the DIV from anywhere inside the DIV:*/
+    elmnt.onmousedown = dragMouseDown;
+  }
+
+  function dragMouseDown(e) {
+    e = e || window.event;
+    // get the mouse cursor position at startup:
+    pos3 = e.clientX;
+    document.onmouseup = closeDragElement;
+    // call a function whenever the cursor moves:
+    document.onmousemove = elementDrag;
+      
+  }
+
+  function elementDrag(e) {
+    e = e || window.event;
+    // calculate the new cursor position:
+    pos1 = pos3 - e.clientX;
+    pos3 = e.clientX;
+
+      if(pos3<=0){
+          pos3=0;
+      }
+    elmnt.style.left = pos3 + "px";
+      document.getElementById("test").textContent=pos3;
+      document.getElementById("logPanel").style.width=pos3+"px";
+  }
+
+  function closeDragElement() {
+    /* stop moving when mouse button is released:*/
+    document.onmouseup = null;
+    document.onmousemove = null;
+  }
+}
+</script>
+
+</body>
+</html>
